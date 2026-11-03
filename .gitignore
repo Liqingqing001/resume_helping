@@ -1,0 +1,16 @@
+profile.local.json
+profile/
+personal/
+receipts/
+output/
+tmp/
+*.dpapi
+*.pdf
+*.jpg
+*.png
+*.zip
+.env
+.env.*
+个人资料/
+简历版本/
+投递记录/
