@@ -1,0 +1,16 @@
+{
+  "profile_root": "C:/YourPrivateJobWorkspace/profile",
+  "resume_pdf": "C:/YourPrivateJobWorkspace/output/resume.pdf",
+  "photo_path": null,
+  "overleaf_project_url": null,
+  "receipt_directory": "C:/YourPrivateJobWorkspace/receipts",
+  "private_vault_path": null,
+  "display_rules": {
+    "show_target_role": false,
+    "internship_date_precision": "month",
+    "availability_policy": "use_confirmed_information",
+    "certificates": [],
+    "included_internships": [],
+    "included_projects": []
+  }
+}
