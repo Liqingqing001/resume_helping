@@ -62,10 +62,40 @@
 - 官方校园入口 `https://zhaopin.meituan.com/web/campus`，页面区分应届校招、转正实习和日常实习。
 - 官方帮助 `https://zhaopin.meituan.com/web/question/campus`；个人中心具体控件须登录后检查。
 
-## BOSS：保留可配置平台，未验证本轮更新
+## BOSS直聘：2026-11-03实测
 
-- `https://www.zhipin.com/`。在线简历、附件、求职期望和聊天投递是不同动作；沟通消息须有用户对应授权。
-- 页面不可用或用户要求跳过时记录停点；不要在之后的普通维护任务中自动重试或永久删除平台。
+### 快速路径
+
+复用既有 Edge CDP 进程。登录后直接进入 `https://www.zhipin.com/web/geek/resume`，核对账号；不要从职位推荐页点击“立即沟通”。未登录时官网可能跳广州首页，默认城市不代表用户偏好。
+
+### 在线简历
+
+- 分区：`.resume-userinfo`、`.resume-summary`、`.resume-purpose`、`.resume-history`、`.resume-project`、`.resume-education`、`.resume-certification`、`.resume-clubExp`、`.resume-professional-skill`。每次只编辑一个分区，保存后等待编辑表单真正关闭再操作下一区，避免“有内容没有保存”弹窗。
+- 编辑/添加链接使用已观察 `ka`：`user-resume-edit-workexp0`、`user-resume-add-workexp`、`user-resume-edit-project0`、`user-resume-edit-professional-skill`、`edit-certificate-click`。索引会重排，先按公司或项目名对应当前条目。
+- 普通输入触发冒泡 `input/change`；工作内容上限3000字、业绩1000字、专业技能1000字。通过真实“完成”按钮保存，不绕过校验。
+- 实习公司可自由输入，部门单列。职位名称是分类选择器；在 `.position-dialog input` 搜索真实职位，点击 `.ui-dropmenu-list-item` 中匹配项。如只能使用标准分类，完整职位名称保留在工作内容中，不能把分类名称误写成求职意向。
+- 行业弹窗 `.industry-dialog` 按真实标签选。必须勾选“本段经历是实习经历”；不随意改动公司屏蔽选项。
+- 月份控件 `.datepicker-wrap`，已观察 Vue `uiDatePicker`，格式 `yyyy-MM`。先填写开始月并等待状态更新，再点结束控件中“至今”；开始月监听可能清空刚设置的结束月。仅调用 `selectTotoday()` 后立刻提交不一定成功，必须核验 `isToday` 和回显。
+- 项目名称、角色、链接、描述单独填写；未确认的项目起止年月保留本站旧值，不能从别站复制矛盾日期。
+- 删除旧项目/社团有“删除后不可恢复”确认；先备份当前条目，逐条确认，避免同批陈旧DOM索引误删。
+- 资格证书弹窗 `.certification-dialog`：旧标签 `.cert-select-tag .cert-select-remove`。一次删除后等渲染再定位下一项；旧节点数组批量点击会漏删。标准六级选择“大学英语六级”。自定义证书输入后需提交 `.cert-input-wrap` 的 submit/真实回车，使其成为已选择标签，光在输入框显示不算添加。最后检查标签数量与内容再点 `button.btn-sure`。
+- 基本信息的邮箱可选字段可能采用遮罩：重新编辑时 input 为空不代表未保存，检查该字段 `.input-prepend-blur` 或业务 `infoData.emailBlur` 是否符合预期；不为此重复提交或导出个人字段。
+
+### 附件
+
+- `.resume-attachment .annex-list` 管理附件；本次最大3份，满额时“上传简历”禁用。先备份过时附件，再删除腾位；新版本确认保存后清理其余过时版本。不得删除聊天记录或声称历史已发送附件同步改变。
+- 跨域 `docdownload.zhipin.com` 下载本次失败。可通过条目菜单“预览”→读取实际 iframe 的 `url` 参数→同源 fetch 该已观察地址获取 PDF。验证 `%PDF-` 后存本地。这条预览路径成功用于3份旧附件备份和新附件回下载。
+- 删除按钮 `[ka=side_delete_attachment_btn_click]`，弹窗明确“已发送给Boss的附件简历不受删除影响”，再点 `[ka=dialog_sure]`。
+- “上传简历”打开对话框，在当前可见上传框内定位 `input[type=file][ka=user-resume-upload-file]`。全页有多个同名输入和头像/视频上传，禁止全局序号猜选。
+- 设置 PDF File/DataTransfer 并触发 change 后会出现附件预览确认，核对文件名、大小、格式，点击 `button[ka=user_resume_add_sure]`“确定添加”；等待对话框关闭及附件列表出现新条目。
+- 附件更新可能另出现“简历附件同步至BOSS/是否发送”对话框。此为向他人发消息，与保存附件不同；没有本次明确发送授权时不确认发送。
+- 保存后刷新，核对列表只有目标版本；再用预览同源下载，比较 SHA-256 与本地PDF，不能只根据显示文件名宣布成功。
+
+### 平台限制与核验
+
+本次实际编辑及新增“期望职位”表单均只显示“全职”单选，期望职位、薪资、工作城市必填；唯一已有期望没有删除入口。不能强改隐藏枚举来伪造“实习”，也不能为清空意向删账号或填新岗位。保留原平台匹配设置并明确告知待调整；这与简历正文不写求职意向分开记录。不要将本站旧城市/薪资复制成新的通用求职偏好。
+
+本次已验证：新版附件保存、刷新回读及哈希一致；两段实习、一个项目、学历、两项证书、专业技能、邮箱保存；旧项目及社团删除。未发送招聘者消息、未投递新岗位；平台期望中的全职/城市/薪资仍为旧值。
 
 
 ### 淘天登录后的实际路径与填写
