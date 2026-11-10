@@ -1,3 +1,5 @@
+日常实习扩展：先读 [19个平台入口与续接](platforms-batch.md)，包含百度、京东、美团新增实测步骤及其他平台的登录停点。
+
 # 招聘平台路径与验证边界
 
 记录日期：2026-11-03。登录状态、页面结构和职位资格须当场核实。以下是操作经验，不包含作者个人资料，也不保证网站永久兼容。
@@ -121,3 +123,4 @@
 - 区块 `.work_experience_edit/.project_experience_edit/.campus_experience_edit/.certificate_edit`，每项 `.mtd-form`。添加 `.list_add`；删除真正的点击节点为 `.delete-list > div`，点外层容器可能无效。
 - MTD表单实例可观察 `getFieldsValue/setFieldsValue/handleChildOnChange`。仅调用外层 `onFieldValueChange` 可能改业务数据而不更新显示和验证状态；文本通过真实输入或 `handleChildOnChange({field:value})`。公司/工作类型的语义回调可能要求 `{name,id}`，表单显示层却是字符串，须分别核对，不能只看一层。
 - 必须核对真实“至今”复选框、必填校验及页面隐私协议勾选状态；保存后回 `mode=view`，刷新后核对两段实习/项目/证书等。预览可能不显示附件名，应重新进入编辑页核对附件是否保留。
+
