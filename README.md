@@ -4,6 +4,26 @@
 
 这是由真实操作整理的工作流和辅助脚本，不是一键群投机器人。腾讯、字节、BOSS 及多个官网和第三方平台已完成真实操作验证；各网站可复用步骤及具体限制见 [20个平台操作记录](job-application-assistant/references/platforms-batch.md)。网页变化后需要重新检查控件。
 
+## 快速安装（Windows）
+
+需要 Codex、Windows PowerShell 和 Node.js 22 或更新版本。下载仓库 ZIP 并解压，或执行下列 PowerShell 命令：
+
+```powershell
+git clone https://github.com/Liqingqing001/resume_helping.git
+Set-Location resume_helping
+.\install.ps1 -Workspace "$env:USERPROFILE\JobWorkspace"
+```
+
+安装脚本将技能放入 $CODEX_HOME/skills（未设置时为 %USERPROFILE%\.codex\skills），在指定工作区创建 profile.local.json 和资料、输出、回执目录。不连接浏览器，不上传资料；已有同名技能或配置时停止，避免覆盖。若系统执行策略阻止脚本，可使用下方手动安装，不必修改全局安全设置。
+
+将自己的已确认资料放入配置的 profile_root，将简历放到 resume_pdf 指定位置，或修改配置指向现有文件。空目录只是准备工作。照片和 Overleaf 都可选；敏感资料加密助手需 PowerShell 7.4 或更新版本（pwsh），普通简历更新无需先建立 DPAPI 容器。
+
+在该工作区打开新的 Codex 聊天，发送：
+
+> 使用 $job-application-assistant，先读取当前目录的 profile.local.json，检查资料是否齐全；用我的简历更新我指定并已登录的平台，附件与在线字段都要保存后核验，先不投递。
+
+首次使用仍需使用者登录招聘网站，并按 Edge 的实际提示启用和批准本机调试连接。安装成功不代表账号登录或网站同步成功。
+
 ## 安装与准备
 
 1. 下载或克隆本仓库。将 `job-application-assistant` 文件夹复制到 `%USERPROFILE%\.codex\skills\`。如已有同名技能，先备份并合并自己的配置。
@@ -16,12 +36,12 @@
 
 ## 如何运行同一条 Edge 连接
 
-需要 Node.js，且 `node -p "typeof WebSocket"` 返回 `function`。脚本没有npm依赖。Windows使用PowerShell；需要Python时用 `py`。
+需要 Node.js 22 或更新版本，且 `node -p "typeof WebSocket"` 返回 `function`。脚本没有npm依赖。Windows使用PowerShell；需要Python时用 `py`。
 
-在工作区内启动一次，保持进程的标准输入打开：
+在自己的求职工作区内启动一次，保持进程的标准输入打开。以下是默认安装路径；设置了 CODEX_HOME 时改用其 skills 子目录：
 
 ```powershell
-node .\job-application-assistant\scripts\cdp-inspect.cjs
+node "$env:USERPROFILE\.codex\skills\job-application-assistant\scripts\cdp-inspect.cjs"
 ```
 
 通过这个进程的stdin发送JSON行，所有网站复用同一进程。示例：
