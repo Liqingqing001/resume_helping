@@ -13,6 +13,8 @@ description: 维护用户自己的求职资料和简历，通过已登录Edge持
 
 填写前阅读[工作流](references/workflow.md)和目标[平台记录](references/platforms.md)。更新简历默认涵盖附件与对应在线字段，用户明确仅附件时除外。对旧网站、简历原稿和新说明的冲突，以用户最新确认优先。
 
+新增网易、得物、金山办公、360、科大讯飞、商汤、米哈游、莉莉丝、MiniMax、联想时，读[新增官网实测记录](references/platforms-new-2026-11-16.md)。账号调剂、亲属任职、日期补齐等使用者确认值写入其私有资料索引，不能固化为所有人的默认规则。
+
 浏览器使用`scripts/cdp-inspect.cjs`的一条常驻连接。先读[连接复用与恢复](references/browser-session.md)，核对可继续访问的已有会话，再决定是否启动客户端；禁止每站重连或自动轮换地址。不要批量导出私密页面、Cookie或凭据。
 
 若配置了Overleaf项目且用户要求在线维护，读[在线编辑与PDF交付](references/overleaf.md)，在该项目备份、编辑、编译并核对下载PDF；本地打开的源文件原地维护。无Overleaf要求的用户不强制配置账号。PDF必须检查中文提取、字体、页面布局和链接，不仅检查编译返回成功。
