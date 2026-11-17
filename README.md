@@ -1,8 +1,8 @@
 # Resume Helping
 
-供 Codex 使用的求职助手 Skill，覆盖**个人资料、简历修改、平台同步、岗位搜索、小红书继任线索、授权投递和结果留档**。通过用户已登录的 Microsoft Edge 完成网站操作，个人资料保存在使用者自己的工作区。
+可安装到本机 Codex、Claude Code 和 Cursor 的求职助手 Skill，覆盖**个人资料、简历修改、平台同步、岗位搜索、小红书继任线索、授权投递和结果留档**。个人资料保存在使用者自己的工作区。简历修改、版本管理，以及按技能中的平台记录整理资料，在技能文件夹进入该助手的技能目录后即可使用。
 
-这是由真实操作整理的工作流和辅助脚本，不是一键群投机器人。腾讯、字节、BOSS 及多个官网和第三方平台已完成真实操作验证；各网站可复用步骤及具体限制见 [20个平台操作记录](job-application-assistant/references/platforms-batch.md)。网页变化后需要重新检查控件。
+招聘网站上的同步、搜索、沟通和投递使用使用者已登录的 Microsoft Edge，通过 `scripts/cdp-inspect.cjs` 完成本机操作，需要 Windows 和 Node.js 22 或更新版本。云端或托管代理连不上这台 Edge。这些网站步骤只在使用者本机的 Codex、Windows 和 Edge 上验证过。这是由真实操作整理的工作流和辅助脚本，不是一键群投机器人。腾讯、字节、BOSS 及多个官网和第三方平台已完成真实操作验证；各网站可复用步骤及具体限制见 [20个平台操作记录](job-application-assistant/references/platforms-batch.md)。网页变化后需要重新检查控件。
 
 
 新增官网的独立简历入口、解析纠错及保存边界见 [2026-11-16 新增平台实测](job-application-assistant/references/platforms-new-2026-11-16.md)，涵盖得物、莉莉丝、MiniMax、360、科大讯飞、网易、米哈游、金山办公和联想等。各站已验证与待完成环节分别说明。
@@ -32,11 +32,11 @@
 - **继任线索**：“沿用这轮偏好，在小红书搜索实习继任，检查原帖、图片和更新状态，给出链接、概要和风险依据，不私信。”
 - **选定后执行**：“我选清单中的第2个岗位，允许在 BOSS 发起沟通；如需发送附件，使用已确认的简历版本，并记录实际结果。”
 
-**当前实测范围：**简历维护、多个平台的附件及在线字段同步，以及 BOSS／小红书社区搜索都有操作记录。搜索、保存资料、联系招聘者和正式投递分别核验，不能把某一环节跑通视为全部平台投递已验证。小红书风险核验只能说明已读证据和未知项，不能担保作者身份或后续流程真实。
+**当前实测范围：**简历维护、多个平台的附件及在线字段同步，以及 BOSS／小红书社区搜索都有操作记录。搜索、保存资料、联系招聘者和正式投递分别核验，不能把某一环节跑通视为全部平台投递已验证。小红书风险核验只能说明已读证据和未知项，不能担保作者身份或后续流程真实。上述网站操作是在 Codex、Windows 和已登录 Edge 上完成的。
 
 ## 快速安装（Windows）
 
-需要 Codex、Windows PowerShell 和 Node.js 22 或更新版本。下载仓库 ZIP 并解压，或执行下列 PowerShell 命令：
+需要 Windows PowerShell，以及 Node.js 22 或更新版本（`node -p "typeof WebSocket"` 返回 `function`）。下载仓库 ZIP 并解压，或执行：
 
 ```powershell
 git clone https://github.com/Liqingqing001/resume_helping.git
@@ -44,34 +44,81 @@ Set-Location resume_helping
 .\install.ps1 -Workspace "$env:USERPROFILE\JobWorkspace"
 ```
 
-安装脚本将技能放入 $CODEX_HOME/skills（未设置时为 %USERPROFILE%\.codex\skills），在指定工作区创建 profile.local.json 和资料、输出、回执目录。不连接浏览器，不上传资料；已有同名技能或配置时停止，避免覆盖。若系统执行策略阻止脚本，可使用下方手动安装，不必修改全局安全设置。
+`-Agent` 的默认值是 `All`。上面的命令会把 `job-application-assistant` 文件夹复制到下文已核对的 Codex、Claude Code、Cursor 用户目录，并在指定工作区用 `profile.example.json` 创建 `profile.local.json` 和资料、输出、回执目录。脚本不连接浏览器，不上传资料。任一目标里已有同名技能，或该工作区已有 `profile.local.json` 时，脚本整次停止，不覆盖已有文件。若要只装一个助手：
 
-将自己的已确认资料放入配置的 profile_root，将简历放到 resume_pdf 指定位置，或修改配置指向现有文件。空目录只是准备工作。照片和 Overleaf 都可选；敏感资料加密助手需 PowerShell 7.4 或更新版本（pwsh），普通简历更新无需先建立 DPAPI 容器。
+```powershell
+.\install.ps1 -Agent Codex -Workspace "$env:USERPROFILE\JobWorkspace"
+.\install.ps1 -Agent Claude -Workspace "$env:USERPROFILE\JobWorkspace"
+.\install.ps1 -Agent Cursor -Workspace "$env:USERPROFILE\JobWorkspace"
+```
 
-在该工作区打开新的 Codex 聊天，发送：
+已经装过一次之后，同一工作区不能靠再次运行脚本补装其他助手：已有配置会让脚本停止。把技能文件夹手动复制到另一个已核对目录即可，不要覆盖已存在的技能。执行策略阻止脚本时，使用下面的手动安装，不必修改全局安全设置。
 
-> 使用 $job-application-assistant，先读取当前目录的 profile.local.json，检查资料是否齐全；用我的简历更新我指定并已登录的平台，附件与在线字段都要保存后核验，先不投递。
+把已确认资料放到配置里的 `profile_root`，把简历放到 `resume_pdf`，或把这两项改成现有文件。空目录只是准备工作。照片和 Overleaf 都可选。敏感资料加密需要 PowerShell 7.4 或更新版本（pwsh）；普通简历更新不必先建立 DPAPI 容器。
 
-首次使用仍需使用者登录招聘网站，并按 Edge 的实际提示启用和批准本机调试连接。安装成功不代表账号登录或网站同步成功。
+### 已核对的 Windows 目录
 
-## 安装与准备
+下表按 2026-11-17 的厂商文档填写。文档没有写明的目录，脚本不猜测，也不会写入。
 
-1. 下载或克隆本仓库。将 `job-application-assistant` 文件夹复制到 `%USERPROFILE%\.codex\skills\`。如已有同名技能，先备份并合并自己的配置。
-2. 在自己的求职工作区复制 `profile.example.json` 为 `profile.local.json`，填写自己的资料路径、Overleaf项目和输出位置；不要把真实资料写进本仓库的示例或技能文件。
-3. 准备自己的简历、已确认经历和证书、可选照片。普通资料可放本地工作区，身份证等敏感信息建议放同步目录之外。提供空值或待确认标记，不让助手猜测。
-4. 使用已登录的 Edge，按浏览器提供的方式启用本机远程调试。首次连接若出现允许提示，由用户处理。不要开放公网端口，也不要复制登录Cookie。
-5. 告诉 Codex 工作区位置，调用 `$job-application-assistant`，指定本次要更新的平台和范围。例如：
+| 助手 | 脚本写入的位置 | 文档 |
+| --- | --- | --- |
+| Codex | `%USERPROFILE%\.agents\skills\job-application-assistant` | [Where Codex loads local skills](https://learn.chatgpt.com/docs/build-skills.md) 将用户技能列为 `$HOME/.agents/skills`。该页没有单独的 Windows 路径，脚本把 `$HOME` 对应为 `%USERPROFILE%`。 |
+| Claude Code | 未设置 `CLAUDE_CONFIG_DIR` 时为 `%USERPROFILE%\.claude\skills\job-application-assistant`；设置后为 `%CLAUDE_CONFIG_DIR%\skills\job-application-assistant` | [Explore the .claude directory](https://code.claude.com/docs/en/claude-directory) 写明：Windows 上 `~/.claude` 就是 `%USERPROFILE%\.claude`；设置 `CLAUDE_CONFIG_DIR` 后，这些 `~/.claude` 路径改到该目录下。个人技能在 `~/.claude/skills/`。 |
+| Cursor | `%USERPROFILE%\.cursor\skills\job-application-assistant` | [Agent Skills](https://cursor.com/docs/skills) 将本机用户目录写为 `~/.cursor/skills/`。该页没有单独的 Windows 路径，脚本把 `~` 对应为 `%USERPROFILE%`。 |
+
+还需要知道这几件文档里写明、但容易看错的事：
+
+- Codex 的[环境变量页](https://learn.chatgpt.com/docs/config-file/environment-variables)仍把 `CODEX_HOME`（默认 `~/.codex`）描述为包含 skills 的状态目录。技能加载表和这页不是同一条路径。本脚本按技能加载表安装，不写入 `%USERPROFILE%\.codex\skills` 或 `%CODEX_HOME%\skills`。以前的安装脚本写的是后一个目录；那个副本还在时，脚本不会删除它。若当前 Codex 只从旧目录加载，改用：
+
+```powershell
+.\install.ps1 -Agent Codex -SkillsDirectory "$env:USERPROFILE\.codex\skills" -Workspace "$env:USERPROFILE\JobWorkspace"
+```
+
+设置了 `CODEX_HOME` 时，把 `-SkillsDirectory` 换成 `$env:CODEX_HOME\skills`。`-SkillsDirectory` 只安装这一个目录。它和 `-Agent All` 不能一起用。
+
+- Claude Desktop 的 Cowork，以及 Claude 的云端会话，不读取本机 `~/.claude/skills/`。这些会话使用 claude.ai 账户里启用的技能，见 [Extend Claude with skills](https://code.claude.com/docs/en/skills)。文档没有给出另一个 Claude Desktop 用户技能文件夹，所以脚本不去猜 `%APPDATA%` 或其他位置。同一页写明：桌面端在本机运行的定时任务会读取 `~/.claude/skills/`。
+- Cursor 同时加载 `~/.cursor/skills/`、`~/.agents/skills/`，并出于兼容再加载 `~/.claude/skills/` 和 `~/.codex/skills/`。`-Agent All` 之后，Cursor 里可能看到同一技能多次。Cursor 不会把 `~/.agents/skills/` 或未同步的本地技能复制到 Cloud Agents；Cloud Agents 也连不上使用者这台 Edge。
+
+厂商也文档化了项目内目录：Codex 与 Cursor 的 `.agents/skills/`，Cursor 的 `.cursor/skills/`，Claude Code 的 `.claude/skills/`。脚本安装的是用户目录，便于在求职工作区之外的聊天里使用。若要放进某个私人工作区，请手动复制，不要把个人资料提交进本仓库。
+
+## 在各助手里调用
+
+在求职工作区打开新的本地会话，让助手先读取该目录的 `profile.local.json`。
+
+- **Codex**（CLI 或 IDE 扩展）：输入 `$job-application-assistant`，或运行 `/skills` 后选择它。见 [How ChatGPT and Codex use skills](https://learn.chatgpt.com/docs/build-skills.md)。
+- **Claude Code**：输入 `/job-application-assistant`。命令名来自 `SKILL.md` 的 `name`。见 [Extend Claude with skills](https://code.claude.com/docs/en/skills)。
+- **Cursor**：在 Agent 聊天中输入 `/`，搜索 `job-application-assistant`。见 [Agent Skills](https://cursor.com/docs/skills)。
+
+示例：
+
+> 使用 job-application-assistant。先读取当前目录的 profile.local.json，检查资料是否齐全。先只修改简历。若要更新我指定并已登录的平台，使用本机 Edge，附件与在线字段都要保存后核验，先不投递。
+
+安装成功不代表账号已经登录，也不代表网站同步成功。
+
+简历编辑、版本管理和按照平台记录整理资料，不要求打开浏览器。平台同步、搜索、沟通和投递才需要 Windows、Node.js 22 和已登录的 Edge，并且目前只在 Codex 上验证过这些网站步骤。
+
+## 手动安装
+
+1. 把整个 `job-application-assistant` 文件夹（含 `SKILL.md`、`references/`、`scripts/`）复制到上一节选中的技能目录。目标已存在时先备份再合并，不要覆盖。
+2. 在自己的求职工作区把 `profile.example.json` 复制为 `profile.local.json`，填写自己的资料路径、可选的 Overleaf 项目和输出位置。不要把真实资料写进本仓库的示例或技能文件。
+3. 准备自己的简历、已确认经历和证书、可选照片。普通资料放在本地工作区。身份证等敏感信息放在同步目录之外。未知项保留空值或待确认标记。
+4. 只有网站操作才需要已登录的 Edge，并按浏览器自己的提示启用本机远程调试。首次连接的允许提示由使用者处理。不要开放公网端口，也不要复制登录 Cookie。
+5. 按上一节调用技能，说明本次平台和范围。例如：
 
 > 读取我的 profile.local.json，用最新简历更新腾讯和字节的附件及在线表单。简历正文和文件名不写求职意向。先备份，保存后刷新核对，不投递岗位。
+
+## 许可
+
+使用本仓库以根目录 [LICENSE](LICENSE) 为准。版权为 2026 李晴 (Li Qing)。被许可人可以在自己的设备和自己的 AI 助手上安装，并用于包括本人求职在内的个人使用。未经书面许可，不得再分发、转授权或转售。这不是开源许可证。
 
 ## 如何运行同一条 Edge 连接
 
 需要 Node.js 22 或更新版本，且 `node -p "typeof WebSocket"` 返回 `function`。脚本没有npm依赖。Windows使用PowerShell；需要Python时用 `py`。
 
-在自己的求职工作区内启动一次，保持进程的标准输入打开。以下是默认安装路径；设置了 CODEX_HOME 时改用其 skills 子目录：
+在自己的求职工作区内启动一次，保持该进程的标准输入打开。下面是 `-Agent All` 或 `-Agent Codex` 的默认技能路径。Claude Code 默认在 `%USERPROFILE%\.claude\skills\job-application-assistant\`，设置了 `CLAUDE_CONFIG_DIR` 时改到该目录下的 `skills`。Cursor 在 `%USERPROFILE%\.cursor\skills\job-application-assistant\`。使用了 `-SkillsDirectory` 时，改为那个目录。
 
 ```powershell
-node "$env:USERPROFILE\.codex\skills\job-application-assistant\scripts\cdp-inspect.cjs"
+node "$env:USERPROFILE\.agents\skills\job-application-assistant\scripts\cdp-inspect.cjs"
 ```
 
 通过这个进程的stdin发送JSON行，所有网站复用同一进程。示例：
@@ -112,7 +159,7 @@ PDF、照片与证件路径由用户自己的配置决定。文件名可用“�
 - `scripts/recover-bytedance-render.js`：严格限定字节简历页的已知动画占位恢复。
 - `scripts/private-profile.ps1`：Windows DPAPI资料摘要与面向指定HTTPS页面的加密传输。它不负责首次导入；已有容器必须由本机同一Windows用户使用相同entropy加密。不得把原始证件写进命令行或同步目录。
 
-DPAPI容器约定entropy为`job-application-assistant/profile/v1`，UTF-8 JSON包含`canonical_fields`、`source_url`、`review_notes`。首次导入时由助手在内存中接收已授权来源、用`ProtectedData.Protect(..., CurrentUser)`密封后写文件；仓库不提供真实资料或通用密钥。更换系统用户通常无法解密原容器。
+DPAPI容器约定entropy为`job-application-assistant/profile/v1`，UTF-8 JSON包含`canonical_fields`、`source_url`、`review_notes`。首次导入时由助手在内存中接收已授权来源、用`ProtectedData.Protect(..., CurrentUser)`密封后写文件；仓库不提供真实资料或通用密钥。更换系统用户通常无法解密原容器。该脚本现有的默认保险库路径是 `%LOCALAPPDATA%\Codex\job-application-assistant\private\profile.dpapi`；安装到其他助手不会改这个默认值，需要其他位置时传入 `VaultPath`。
 
 ## 检查与限制
 
